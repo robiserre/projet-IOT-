@@ -106,6 +106,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
   void onDisconnect(BLEServer *MyServer)// Fonction qui permet d'allumer la led en rouge lorsque le bluetooth est déconnecté 
   {
     analogWrite(rouge,255);
+    analogWrite(bleu,255);
     Serial.println("BLE Déconnecté ! ");
     indicateur = 3;
   }
