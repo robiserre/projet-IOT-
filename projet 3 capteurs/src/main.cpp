@@ -26,8 +26,7 @@
 #define DESCRIPTOR_UUIDtv "3e2ec08e-38e0-4364-9f66-3dbb939c515e"
 #define CHARACTERISTIC_UUIDc02 "8c2305ed-1bca-4a3a-8259-e5bf3413c085"
 #define DESCRIPTOR_UUIDc02 "1b85251f-e1c3-4473-b388-285cd4c2cd30"
-#define CHARACTERISTIC_UUIDindic "3602c21d-8806-42f7-aca9-163ca429d53b"
-#define DESCRIPTOR_UUIDindic "0ed7d4dc-0074-4914-ae83-266e1032c1d6"
+
 
 // Définition des ports de l'ESP32 utilisés :
 #define SDA 33
@@ -40,7 +39,6 @@ Adafruit_BME280 bme; // classe qui permet d'interagir avec le capteur bme via le
 
 
 // Définition des variables avec leur type : 
-int indicateur;
 int rouge = 2;
 int vert = 4;
 int bleu = 3;
@@ -60,7 +58,7 @@ char valeur_affichageh[7] ;
 char valeur_affichaget[7] ;
 char valeur_affichagetv[7] ;
 char valeur_affichagec02[9] ;
-char valeur_affichageindic[7];
+
 
 //Configuration de l'envoie des paquets de valeurs en bluetooth : 
 
@@ -87,9 +85,7 @@ BLECharacteristic MyCharacteristicc02(CHARACTERISTIC_UUIDc02,
                   BLECharacteristic::PROPERTY_READ);
 BLEDescriptor MyDescriptorc02(DESCRIPTOR_UUIDc02);
 
-BLECharacteristic MyCharacteristicindic(CHARACTERISTIC_UUIDindic,
-                  BLECharacteristic::PROPERTY_READ);
-BLEDescriptor MyDescriptorindic(DESCRIPTOR_UUIDindic);
+
 
 // Tentative de connection au bluetooth : 
 class MyServerCallbacks : public BLEServerCallbacks {
@@ -108,7 +104,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
     analogWrite(rouge,255);
     analogWrite(bleu,255);
     Serial.println("BLE Déconnecté ! ");
-    indicateur = 3;
+    
   }
 };
 void setup() {
@@ -126,7 +122,7 @@ void setup() {
     BLEServer *Myserver = BLEDevice::createServer();
      Myserver->setCallbacks(new MyServerCallbacks());
 
-    // Creation du service 
+    // Creation des 2 services pour avoir 2 paquets de données 
     BLEService *Myservice = Myserver->createService(SERVICE_UUID);
     BLEService *Myservice2 = Myserver->createService(SERVICE_UUID2);
 
@@ -151,9 +147,7 @@ void setup() {
     MyCharacteristicc02.addDescriptor(&MyDescriptorc02);
     MyDescriptorc02.setValue(" CO2 : Valeur PPM  ");
     
-    Myservice2->addCharacteristic(&MyCharacteristicindic);
-    MyCharacteristicindic.addDescriptor(&MyDescriptorindic);
-    MyDescriptorindic.setValue(" condition : ");
+  
     
 
  // Démarrage du service
@@ -169,11 +163,7 @@ void setup() {
     Serial.println(F("BME280 test"));
     Wire.begin(SDA,SCL); // assignation des pins qui sont définis dans les varaibles SDA SCL au capteur bme.
     unsigned status;
-    status = bme.begin(0x76, &Wire); // On assigne aussi l'adresse du capteur pour qu'il récupere les valeurs du bme puisqu'on a 2 capteurs qui utilise des ports I2C 
-    
-   
-   
-
+    status = bme.begin(0x76, &Wire); // On assigne aussi l'adresse du capteur pour qu'il récupere les valeurs du bme puisqu'on a 2 capteurs qui utilise des ports I2C
 
     Wire1.begin(SDA2,SCL2); // assignation des pins qui sont définis dans les varaibles SDA2 SCL2  au capteur ccs811.
     
@@ -254,11 +244,6 @@ void envoi() { // Fonction qui permet l'envoie de chaque valeurs sous forme de 2
     MyCharacteristicc02.setValue(valeur_affichagec02); // Attribution de la chaîne de caractère à la description de la caractérisque associée.
     delay(1000); // Fréquence d'envoi.
 
-    dtostrf(indicateur,1,2,valeur_affichageindic);
-    Serial.println(valeur_affichageindic);
-    MyCharacteristicindic.setValue(valeur_affichageindic); // Attribution de la chaîne de caractère à la description de la caractérisque associée.
-    delay(5000); // Fréquence d'envoi.
-    
 }
 
 void loop() { 
@@ -278,20 +263,20 @@ if ((T>30 || T <14) || (HCOH>0.3) || (TV>500) || (CO2>1200) || (H>80) || (H<20))
     analogWrite(rouge, 255);
     analogWrite(vert, 0);
     analogWrite(bleu,0);
-    indicateur = 2; // les indicateurs vont etre envoyés sur le rasberry pi ce qui nous permettra d'avoir la reponse au condition sur le node red 
+     
   }
 
 else if ((T>26 && T<30) || (T<18 && T>14) || (CO2<1200 && CO2>1000)) {
     analogWrite(rouge, 255);
     analogWrite(vert, 50);
     analogWrite(bleu,0);
-    indicateur = 1;
+    
   }
 else {
     analogWrite(rouge, 0);
     analogWrite(vert, 255);
     analogWrite(bleu,0);
-    indicateur = 0;
+    
 }
 
 }
