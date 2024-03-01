@@ -1,2 +1,2 @@
-# projet-IOT-
-code du projet IOT 
+# projet-serre connectée-
+code du projet de la serre connectée 
